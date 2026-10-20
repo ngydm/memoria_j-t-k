@@ -125,7 +125,7 @@ namespace memoria_játék
                     Button btn = new Button
                     {
                         Content = "?",
-                        Tag = rejtettErtek, // Holds the number or emoji string
+                        Tag = rejtettErtek, 
                         FontSize = 20,
                         FontWeight = FontWeights.Bold,
                         Margin = new Thickness(3)
@@ -168,7 +168,11 @@ namespace memoria_játék
                 if (elsoKattintas.Tag.ToString() == masodikKattintas.Tag.ToString())
                 {
                     // MATCH: Leave them revealed
+                    
+                    elsoKattintas.IsEnabled =false;
+                    masodikKattintas.IsEnabled = false;
                     elsoKattintas = null;
+                    szamlalo();
                 }
                 else
                 {
@@ -182,6 +186,7 @@ namespace memoria_játék
 
                     elsoKattintas = null;
                     blokkolva = false;
+                    szamlalo();
                 }
             }
         }
@@ -190,7 +195,7 @@ namespace memoria_játék
         {
             ResetGrid();
             starter.IsEnabled = true;
-            tb_kiirat.Text = "Próbálkozások száma: 0";
+            txtB_counter.Text = "Próbálkozások száma: 0";
         }
 
         private void ResetGrid()
@@ -202,6 +207,11 @@ namespace memoria_játék
             elsoKattintas = null;
             blokkolva = false;
             probalkozasok = 0;
+        }
+        private void szamlalo()
+        {
+            probalkozasok++;
+            txtB_counter.Text = "Próbálkozások száma:" + probalkozasok/2;
         }
     }
 }
