@@ -9,140 +9,199 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-
 namespace memoria_játék
 {
-    
-
-
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
-        List<string> sizes = new List<string>() { "2x2", "4x4", "6x6", };
-        List<string> games = new List<string>() { "szinek", "számok", "emojik" };
-        int gridmeret = 0; //globális változó
+        List<string> sizes = new List<string>() { "2x2", "4x4", "6x6" };
+        List<string> games = new List<string>() { "számok", "emojik" };
+
+        int gridmeret = 0;
+        string jatekTipus = "számok"; // Default game type
+
+        private Button elsoKattintas = null;
+        private bool blokkolva = false;
+        private int probalkozasok = 0;
+
+        // Emoji list for emoji mode
+        private List<string> emojis = new List<string>()
+        {
+            "❤", "🙌", "🤳", "✨", "😁", "✔", "🎁", "👍", "🐨", "😎",
+            "🐱‍🐉", "👀", "🌹", "🐸", "🐵", "🐔", "🐧", "🐦"
+        };
+
         public MainWindow()
         {
             InitializeComponent();
             lbox_meret.ItemsSource = sizes;
             lbox_type.ItemsSource = games;
-
-
         }
 
         private void Kivalasztasmeret(object sender, SelectionChangedEventArgs e)
         {
-            string[] kivalasztott = lbox_meret.SelectedItem.ToString().Split("x");
-            gridmeret = Convert.ToInt32(""+kivalasztott[0]); 
-            //mi van akkor, ha nincs semmi kiválasztva
-            if (kivalasztott != null)
+            if (lbox_meret.SelectedItem != null)
             {
-                tb_kiirat.Text = "A választott méret " + kivalasztott;
-
+                string[] kivalasztott = lbox_meret.SelectedItem.ToString().Split("x");
+                gridmeret = Convert.ToInt32(kivalasztott[0]);
+                tb_kiirat.Text = "A választott méret: " + lbox_meret.SelectedItem;
             }
             else
             {
-                tb_kiirat.Text = "Nincs kiválasztott elem";
+                tb_kiirat.Text = "Nincs kiválasztott méret";
             }
-
         }
 
         private void Kivalasztas2(object sender, SelectionChangedEventArgs e)
         {
-            string kivalasztott2 = "" + lbox_type.SelectedItem;
-            //mi van akkor, ha nincs semmi kiválasztva
-            if (kivalasztott2 != null)
+            if (lbox_type.SelectedItem != null)
             {
-                tb_kiirat2.Text = "A választott játéktipus " + kivalasztott2;
+                jatekTipus = lbox_type.SelectedItem.ToString();
+                tb_kiirat2.Text = "A választott játéktípus: " + jatekTipus;
             }
             else
             {
-                tb_kiirat2.Text = "Nincs kiválasztott elem";
+                tb_kiirat2.Text = "Nincs kiválasztott játéktípus";
             }
         }
 
         private void starter_Click(object sender, RoutedEventArgs e)
         {
+            if (gridmeret == 0)
+            {
+                MessageBox.Show("Kérlek válassz méretet a játék indítása előtt!", "Figyelmeztetés");
+                return;
+            }
+
             Button btn = (Button)sender;
+            
+            // Reset counter and clear any existing board
+            probalkozasok = 0;
+            tb_kiirat.Text = "Próbálkozások száma: 0";
+            ResetGrid();
+
             GombokElhelyezese();
             btn.IsEnabled = false;
         }
+
         private void GombokElhelyezese()
-
         {
-
             for (int i = 0; i < gridmeret; i++)
-
             {
-
                 btn_grid.RowDefinitions.Add(new RowDefinition());
-
                 btn_grid.ColumnDefinitions.Add(new ColumnDefinition());
-
             }
 
-            List<int> szamok = new List<int>();
+            int pairCount = (gridmeret * gridmeret) / 2;
+            List<string> elemek = new List<string>();
 
-            for (int i = 1; i <= gridmeret * gridmeret / 2; i++)
-
+            // Generate pairs based on selected game mode
+            if (jatekTipus == "emojik")
             {
-
-                szamok.Add(i);
-
-                szamok.Add(i);
-
+                for (int i = 0; i < pairCount; i++)
+                {
+                    elemek.Add(emojis[i % emojis.Count]);
+                    elemek.Add(emojis[i % emojis.Count]);
+                }
+            }
+            else // "számok" default mode
+            {
+                for (int i = 1; i <= pairCount; i++)
+                {
+                    elemek.Add(i.ToString());
+                    elemek.Add(i.ToString());
+                }
             }
 
-
-            szamok = szamok.Shuffle().ToList(); 
+            // Shuffle the elements
+            elemek = elemek.Shuffle().ToList();
             int index = 0;
 
             for (int i = 0; i < gridmeret; i++)
-
             {
-
                 for (int j = 0; j < gridmeret; j++)
-
                 {
+                    string rejtettErtek = elemek[index++];
 
                     Button btn = new Button
                     {
-
                         Content = "?",
-
+                        Tag = rejtettErtek, // Holds the number or emoji string
                         FontSize = 20,
-
                         FontWeight = FontWeights.Bold,
-
-                        Margin = new Thickness(3),
-
+                        Margin = new Thickness(3)
                     };
+
                     btn.Click += button_cl;
 
                     Grid.SetRow(btn, i);
-
                     Grid.SetColumn(btn, j);
 
-
                     btn_grid.Children.Add(btn);
-
                 }
-
             }
-
         }
 
-        private void Btn_Click(object sender, RoutedEventArgs e)
+        private async void button_cl(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            if (blokkolva) return;
+
+            Button btn = (Button)sender;
+
+            // If the button is already flipped, do nothing
+            if (btn.Content.ToString() != "?") return;
+
+            // Reveal hidden content (number or emoji)
+            btn.Content = btn.Tag;
+
+            if (elsoKattintas == null)
+            {
+                elsoKattintas = btn;
+            }
+            else
+            {
+                // Second card clicked -> increment try counter
+                Button masodikKattintas = btn;
+                probalkozasok++;
+                tb_kiirat.Text = "Próbálkozások száma: " + probalkozasok;
+
+                // Compare Tag values (works for both numbers and emojis)
+                if (elsoKattintas.Tag.ToString() == masodikKattintas.Tag.ToString())
+                {
+                    // MATCH: Leave them revealed
+                    elsoKattintas = null;
+                }
+                else
+                {
+                    // NO MATCH: Wait briefly, then flip both back
+                    blokkolva = true;
+
+                    await Task.Delay(700);
+
+                    elsoKattintas.Content = "?";
+                    masodikKattintas.Content = "?";
+
+                    elsoKattintas = null;
+                    blokkolva = false;
+                }
+            }
         }
 
-        private void button_cl(object sender, RoutedEventArgs e)
+        private void reset_Click(object sender, RoutedEventArgs e)
         {
+            ResetGrid();
+            starter.IsEnabled = true;
+            tb_kiirat.Text = "Próbálkozások száma: 0";
+        }
 
+        private void ResetGrid()
+        {
+            btn_grid.Children.Clear();
+            btn_grid.RowDefinitions.Clear();
+            btn_grid.ColumnDefinitions.Clear();
 
+            elsoKattintas = null;
+            blokkolva = false;
+            probalkozasok = 0;
         }
     }
 }

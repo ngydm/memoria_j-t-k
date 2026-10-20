@@ -10,8 +10,8 @@
         <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="24" Width="255"><Run Language="hu-hu" Text="Kérem adja meg mekkora legyen a pálya:"/></TextBlock>
         <ListBox x:Name="lbox_meret" Margin="400,10,27,324" SelectionChanged="Kivalasztasmeret"/>
         <ListBox x:Name="lbox_type" Margin="10,10,397,324" SelectionChanged="Kivalasztas2"/>
-        <TextBlock x:Name="tb_kiirat" TextWrapping="Wrap" Width="120" Margin="408,399,272,11" RenderTransformOrigin="0.477,0.822" />
-        <TextBlock x:Name="tb_kiirat2" TextWrapping="Wrap" Width="120" Margin="598,400,82,10" RenderTransformOrigin="0.477,0.822" />
+        <TextBlock x:Name="tb_kiirat" TextWrapping="Wrap" Width="120" Margin="400,411,280,-1" RenderTransformOrigin="0.477,0.822" />
+        <TextBlock x:Name="tb_kiirat2" TextWrapping="Wrap" Width="120" Margin="586,411,94,-1" RenderTransformOrigin="0.477,0.822" />
 
         <Grid Margin="50,130,52,55">
             <Grid.RowDefinitions>
@@ -20,5 +20,7 @@
             <Grid x:Name="btn_grid" SnapsToDevicePixels="True"/>
         </Grid>
         <Button x:Name="starter" Content="indit" HorizontalAlignment="Center" Margin="0,379,0,0" VerticalAlignment="Top" Width="50" Click="starter_Click" RenderTransformOrigin="0.578,0.634"/>
+        <TextBlock x:Name="txtB_counter" TextWrapping="Wrap" Text="0" Margin="52,367,576,35"/>
+        <Button x:Name="btn_reset" Content="Törlés" HorizontalAlignment="Center" Click="reset_Click" Margin="460,379,280,35" VerticalAlignment="Top" Width="50"  RenderTransformOrigin="0.578,0.634"/>
     </Grid>
 </Window>
